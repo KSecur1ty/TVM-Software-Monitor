@@ -1,5 +1,4 @@
-# TVM Software Monitor 
-
+#TVM Software Monitor
 import csv
 import json
 import tkinter as tk
@@ -24,7 +23,6 @@ def load_csv(filepath):
 
 def update_change_history(device, added, removed, history_file):
     today_date = datetime.now().strftime("%Y-%m-%d")
-
     if not os.path.exists(history_file):
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
@@ -33,7 +31,6 @@ def update_change_history(device, added, removed, history_file):
     else:
         workbook = openpyxl.load_workbook(history_file)
         worksheet = workbook.active
-
 
     for row in worksheet.iter_rows(min_row=2, values_only=True):
         if row[0] == today_date and row[1] == device:
@@ -45,7 +42,6 @@ def update_change_history(device, added, removed, history_file):
         '; '.join(sorted(added)),
         '; '.join(sorted(removed))
     ])
-
     workbook.save(history_file)
 
 def check_consecutive_changes(history_file):
@@ -54,8 +50,8 @@ def check_consecutive_changes(history_file):
 
     workbook = openpyxl.load_workbook(history_file)
     worksheet = workbook.active
-
     device_changes = {}
+
     for row in worksheet.iter_rows(min_row=2, values_only=True):
         date_str, device, added, removed = row
         if added or removed:
@@ -78,11 +74,16 @@ def check_consecutive_changes(history_file):
 
 def compare_and_export(yesterday_data, today_data, output_file, history_file):
     all_devices = set(yesterday_data.keys()).union(today_data.keys())
-
     workbook = openpyxl.Workbook()
-    worksheet = workbook.active
-    worksheet.title = "Software Inventory Comparison"
-    worksheet.append(['DeviceName', 'Status', 'AddedSoftware', 'RemovedSoftware'])
+
+    # Installed Software Changes Sheet
+    ws_installed = workbook.active
+    ws_installed.title = "Installed Software Changes"
+    ws_installed.append(['DeviceName', 'Status', 'InstalledSoftware'])
+
+    # Uninstalled Software Changes Sheet
+    ws_uninstalled = workbook.create_sheet(title="Uninstalled Software Changes")
+    ws_uninstalled.append(['DeviceName', 'Status', 'UninstalledSoftware'])
 
     for device in sorted(all_devices):
         yesterday_software = yesterday_data.get(device, set())
@@ -91,39 +92,37 @@ def compare_and_export(yesterday_data, today_data, output_file, history_file):
         added = today_software - yesterday_software
         removed = yesterday_software - today_software
 
-        status = 'Changed' if added or removed else 'Unchanged'
-        worksheet.append([
-            device,
-            status,
-            '; '.join(sorted(added)),
-            '; '.join(sorted(removed))
-        ])
+        status_added = 'Changed' if added else 'Unchanged'
+        status_removed = 'Changed' if removed else 'Unchanged'
+
+        ws_installed.append([device, status_added, '; '.join(sorted(added))])
+        ws_uninstalled.append([device, status_removed, '; '.join(sorted(removed))])
 
         update_change_history(device, added, removed, history_file)
 
         print(f"\nDevice: {device}")
-        if added or removed:
-            if added:
-                print("  Added:")
-                for item in sorted(added):
-                    print(f"    + {item}")
-            if removed:
-                print("  Removed:")
-                for item in sorted(removed):
-                    print(f"    - {item}")
-        else:
+        if added:
+            print("  Added:")
+            for item in sorted(added):
+                print(f"    + {item}")
+        if removed:
+            print("  Removed:")
+            for item in sorted(removed):
+                print(f"    - {item}")
+        if not added and not removed:
             print("  No changes in installed software.")
 
     # Adjust column widths
-    for col in worksheet.columns:
-        max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
-        worksheet.column_dimensions[col[0].column_letter].width = max_length + 5
+    for sheet in [ws_installed, ws_uninstalled]:
+        for col in sheet.columns:
+            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+            sheet.column_dimensions[get_column_letter(col[0].column)].width = max_length + 5
 
     workbook.save(output_file)
 
     flagged = check_consecutive_changes(history_file)
     if flagged:
-        print("\n Devices with software changes for 3 or more consecutive days:")
+        print("\nDevices with software changes for 3 or more consecutive days:")
         for device in flagged:
             print(f"  - {device}")
 
@@ -152,5 +151,5 @@ if __name__ == "__main__":
 
     compare_and_export(yesterday_data, today_data, output_file, history_file)
 
-    print(f"\n Daily report saved to: {os.path.abspath(output_file)}")
-    print(f" Change history updated in: {os.path.abspath(history_file)}")
+    print(f"\nDaily report saved to: {os.path.abspath(output_file)}")
+    print(f"Change history updated in: {os.path.abspath(history_file)}")
