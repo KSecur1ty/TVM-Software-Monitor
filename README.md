@@ -15,4 +15,6 @@ By using the below query, we can collect all the data from defender's DeviceTvmS
 Once this query has finished running, navigate to export and press download as CSV, before saving it to the same location as this repository.
 ![image](https://github.com/user-attachments/assets/9da72f00-4f78-4925-9476-ec0062f5ee62)
 
-Make sure to have Python 3.12 or later installed, before running '''pip install openpyxl'''
+Make sure to have Python 3.12 or later installed, before running 'pip install openpyxl' in the terminal. This is used for outputting the collected information to software_changes_summary_todays_date.xlsx and device_change_history.xlsx .
+
+Finally, run 'python main.py' in the terminal or whatever coding platform you choose, and watch as the program proccesses all your Endpoint information. 
