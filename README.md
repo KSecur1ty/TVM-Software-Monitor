@@ -6,7 +6,7 @@ A python command line tool used in conjunction with Defender Hunting Queries to 
 Defender Advanced Hunting with KQL (Kusto Query Language) is incredibly powerful when used in conjuction with other tools, especially regarding data about Endpoints you manage within your Microsoft Tenant. 
 By using the below query, we can collect all the data from defender's DeviceTvmSoftwareInventory to see a per device view of each endpoints installed programs they have on it. It is important to note that the query does NOT show default office products when looking at Windows devices. It can however detect applications regardless of the endpoints operating system.
 
-**DeviceTvmSoftwareInventory
+****DeviceTvmSoftwareInventory
 | extend SoftwareInfo = strcat(SoftwareName, " (", SoftwareVersion, ")")
 | summarize InstalledSoftware = make_list(SoftwareInfo) by DeviceName
-| order by DeviceName asc**
+| order by DeviceName asc****
