@@ -10,3 +10,6 @@ By using the below query, we can collect all the data from defender's DeviceTvmS
 | extend SoftwareInfo = strcat(SoftwareName, " (", SoftwareVersion, ")")
 | summarize InstalledSoftware = make_list(SoftwareInfo) by DeviceName
 | order by DeviceName asc****
+
+Once this query has finished running, navigate to export and press download as CSV, before saving it to the same location as this repository.
+![image](https://github.com/user-attachments/assets/9da72f00-4f78-4925-9476-ec0062f5ee62)
